@@ -22,6 +22,10 @@ library(tidyverse)
 
 ### Load the data
 ```{r}
-
+fifa = read_csv("./Data/CompleteDataset.csv")
+data = fifa %>% 
+    janitor::clean_names() %>% 
+    select(-c(x1, name, photo, flag, club_logo, wage)) %>% 
+    mutate(value = readr::parse_number(value))
 ```
 
