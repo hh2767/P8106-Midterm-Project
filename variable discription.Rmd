@@ -1,0 +1,103 @@
+---
+title: "variable discription"
+author: "Haoran Hu"
+date: "2019-3-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Description of all the variables in the tidy dataset
+
+##Variables evaluating soccer players' general abilities:
+
+* `age`: (int)age of players
+
+* `nationality`: (fct)nationality of players
+
+* `potential`: (int)score of players' potential
+
+* `club`: (fct)club of players
+
+* `special`: (int)aggregated score of players' several special abilities( important abilities for all soccer players)
+
+* `acceleration`: (int)score of players' acceleration ability(an important ability for all soccer players)
+
+* `aggression`: (int)score evaluating players' level of aggression(important for all soccer players)
+
+* `agility`: (int)score of players' agility(an important ability for all soccer players)
+
+* `balance`: (int)score of players' balancing ability(an important ability for all soccer players)
+
+* `ball control`: (int)score of players' ball control ability(an important ability for all soccer players)
+
+* `composure`: (int)score of players' self-possession ability(an important ability for all soccer players)
+
+* `curve`: (int)score of players' curve skill(an important skill for all soccer players)
+
+* `dribble`: (int)score of players' dribbling skill(an important skill for all soccer players) 
+
+* `free_kick_accuracy`: (int)score of players' free-kicking skill(an important skill for all soccer players)
+
+* `interceptions`: (int)score of players' interceptions(an important ability for all soccer players)
+
+* `jumping`: (int)score of players' jumping ability(an important ability for all soccer players)
+
+* `long_passing`: (int)score of players' long passing ability(an important ability for all soccer players)
+
+* `penalty`: (int)score of players' penalty skill(an important skill for all soccer players)
+
+* `positioning`: (int)score of players' positioning skill(an important skill for soccer players except goal keepers)
+
+* `reactions`: (int)score of players' reaction speed(important for soccer players except goal keepers)
+
+* `short_passing`: (int)score of players' short passing skill(an attacking skill, important for soccer players except goal keepers)
+
+* `shot_power`: (int)score of players' shot power(important for soccer players except goal keepers)
+
+* `sprint_speed`: (int)score of players' shot power(important for all soccer players)
+
+* `stamina`: (int)score of players' stamina(important for all soccer players)
+
+* `strength`: (int)score of players' strength(important for all soccer players)
+
+* `vision`: (int)score of players' vision(important for all soccer players)
+
+* `sliding_tackle`:(int)score of players' sliding tackle skill(an defending skill, but important for all soccer players)
+
+* `standing_tackle`:(int)score of players' standing tackle skill(an defending skill, but important for all soccer players)
+
+## Variables specificlly on goal-keeping skills:
+
+* `gk_diving`: (int)score of goal keepers' diving skill(an important skill for goal keepers) 
+
+* `gk_handling`: (int)score of goal keepers' handling skill(an important skill for goal keepers)
+
+* `gk_kicking`: (int)score of goal keepers' kicking skill(an important skill for goal keepers) 
+
+* `gk_positioning`: (int)score of goal keepers' positioning skill(an important skill for goal keepers)
+
+* `gk_reflexes`: (int)score of goal keepers' reflex speed(important for goal keepers)
+
+##Variables on attacking skills:
+
+* `crossing`: (int)score of players' crossing skill(an attacking skill, important for soccer players except goal keepers, especially important for forward players) 
+
+* `finishing`: (int)score of players' finishing skill(an attacking skill, important for soccer players except goal keepers, especially important for forward players) 
+
+* `long_shots`: (int)score of players' long shot skill(an attacking skill, important for soccer players except goal keepers, especially important for forward players)
+
+* `heading`: (int)score of players' heading skill(an attacking skill, important for soccer players except goal keepers) 
+
+* `volleys`: (int)score of players' volleying skill(an attacking skill, important for soccer players except goal keepers)
+
+##Variables on defending skills:
+
+* `marking`: (int)score of players' marking skill(an defending skill, important for soccer players except goal keepers)
+
+##Outcome:
+
+* `value`: (num)market value of players
+
