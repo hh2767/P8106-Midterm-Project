@@ -1,0 +1,48 @@
+---
+title: "Nonlinear"
+author: "JunLu"
+date: "4/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE
+                      )
+library(caret)
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col <- rgb(.2, .4, .2, .2) 
+theme1$plot.symbol$pch <- 16
+theme1$plot.line$col <- rgb(.8, .1, .1, 1) 
+theme1$plot.line$lwd <- 2
+theme1$strip.background$col <- rgb(.0, .2, .6, .2)
+trellis.par.set(theme1)
+
+library(tidyverse)
+library(caret)
+library(patchwork)
+library(splines)
+library(gam)
+library(mgcv)
+library(boot)
+```
+
+```{r}
+train = read_csv("./fit non-linear model/train.csv") %>% 
+    select(-na_count)
+y = train$transformed_value
+x = model.matrix(transformed_value ~ ., train)[,-1] 
+```
+
+```{r}
+ctrl1 <- trainControl(method = "cv", number = 10)
+gam.fit = train(x, y,
+                 method = "gam",
+                 tuneGrid = data.frame(method = "GCV.Cp", 
+                                       select = c(TRUE,FALSE)), 
+                 trControl = ctrl1)
+gam.fit$bestTune
+gam.fit$finalModel
+```
+
