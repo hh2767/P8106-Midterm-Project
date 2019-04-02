@@ -454,10 +454,9 @@ The plot would be too large to display if we put in all the variables, so I just
 library(corrplot)
 
 cor_data = data %>% 
-    select(-club, -nationality)
-x <- model.matrix(transformed_value~.,cor_data)[,-1]
+    select(-club, -nationality, -na_count)
 
-corrplot(cor(x), tl.cex = 1.2)
+corrplot(cor(cor_data), tl.cex = 1.2)
 ```
 
 This plot shows that scores that are specificly measured for goal keepers(i.e. variable whose names start with "gk_") are highly correlated.
@@ -466,6 +465,8 @@ This plot shows that scores that are specificly measured for goal keepers(i.e. v
 
 ```{r}
 trRows = createDataPartition(data$transformed_value, p = .75, list = FALSE)
+data = data %>% 
+    select(-club, -na_count)
 train = data[trRows,] %>% write_csv("..\\exploratory analysis\\train.csv")
 test = data[-trRows,] %>% write_csv("..\\exploratory analysis\\test.csv")
 ```
