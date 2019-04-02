@@ -172,6 +172,45 @@ for (i in 1:13) {
 #sapply(data, function(x) sum(is.na(x))) #no NA's in any column
 ```
 
+```{r}
+a = unique(data$nationality) %>% tibble()
+
+data = data %>% 
+    mutate(nationality = as.character(nationality))
+
+eu = c("Germany", "Spain", "Italy", "Belgium", "Slovenia", "France", "Czech Republic", "Croatia", "Switzerland", "Portugal", "Denmark", "Poland", "Greece", "Bosnia Herzegovina", "England", "Norway", "Netherlands", "Finland", "Russia", "Turkey", "Ukraine", "Romania", "Albania", "Hungary", "Lithuania", "Republic of Ireland", "Austria", "Sweden", "Wales", "Scotland", "Bulgaria", "Serbia", "Georgia", "Kosovo", "Slovakia", "Latvia", "Belarus", "FYR Macedonia", "Northern Ireland", "Iceland", "Luxembourg",
+       "Montenegro", "Israel", "San Marino")
+as = c("China PR", "Korea Republic", "Japan", "Oman", "Saudi Arabia", "Egypt", "Iran",
+       "Philippines", "India", "Lebanon", "Senegal", "Morocco",  "Comoros", "Nigeria", "Algeria", "Ivory Coast", "Ghana", "DR Congo", "Benin", "Kenya", "Equatorial Guinea", "Gabon", " Burkina Faso", "Congo", "Tunisia", "Cape Verde", "Angola")
+af = c("Cameroon", "South Africa", "Mali")
+na = c("United States", "Guatemala", "Canada", "Puerto Rico", "Haiti", "Bermuda")
+sa = c("Costa Rica", "Argentina", "Brazil", "Uruguay", "Chile", "Colombia", "Mexico", "Venezuela", "Curacao", "Peru", "Paraguay", "Ecuador", "Bolivia")
+oc = c("Australia", "New Zealand")
+
+nation_eu = function(name){
+  if (name %in% eu)
+      name_new = "eu"
+  else if (name %in% as)
+      name_new = "as"
+  else if (name %in% na)
+      name_new = "na"
+  else if (name %in% sa)
+      name_new = "sa"
+  else if (name %in% oc)
+      name_new = "oc"
+  else name_new = "af"
+  name_new
+}
+
+
+data = data %>% 
+    mutate(nationality = map(.x = nationality, ~nation_eu(.x))) %>% 
+    mutate(nationality = as.factor(unlist(nationality)))
+
+
+```
+
+
 #Tables for descriptive statistics
 
 ```{r}

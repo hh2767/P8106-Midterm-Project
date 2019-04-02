@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+author: "JunLu"
+date: "4/2/2019"
+output: html_document
+---
+
+```{r}
+as = c("Japan", "Oman", "Saudi Arabia", "Egypt", "Iran",
+       "Philippines", "India", "Lebanon") 
+eu = c("Kosovo", "Slovakia", "Latvia", "Belarus", "FYR Macedonia", "Northern Ireland", "Iceland", "Luxembourg",
+       "Montenegro", "Israel", "San Marino")
+af = c("Senegal", "Morocco",  "Comoros", "Nigeria", "Algeria", "Ivory Coast", "Ghana", "DR Congo", "Benin", "Kenya", "Equatorial Guinea", "Gabon", " Burkina Faso", "Congo", "Tunisia", "Cape Verde", "Angola")
+na = c("Guatemala", "Canada", "Puerto Rico", "Haiti", "Bermuda")
+sa = c("Ecuador", "Bolivia")
+oc = c("New Zealand", )
+```
+
