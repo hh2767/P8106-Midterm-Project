@@ -21,7 +21,6 @@ trellis.par.set(theme1)
 
 library(tidyverse)
 library(caret)
-library(patchwork)
 library(splines)
 library(gam)
 library(mgcv)
@@ -34,7 +33,7 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./non-linear/train.csv") %>% 
+train = read_csv("./train.csv") %>% 
     select(-na_count)
 y = train$transformed_value
 x = model.matrix(transformed_value ~ ., train)[,-1] 
@@ -64,6 +63,15 @@ save(gam.fit, file = "./gam_fit.rda")
 
 gam.fit$bestTune
 gam.fit$finalModel
+```
+```{r}
+gam = gam(transformed_value ~ age + nationality + club + potential + special + acceleration 
+             + aggression + agility + balance + ball_control + composure + crossing + curve + 
+                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
+                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
+                 jumping + long_passing + long_shots + marking + penalties + positioning +
+                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
+                 standing_tackle + strength + vision + volleys, data = train)
 ```
 
 
@@ -108,12 +116,15 @@ anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
 ## Multivariate Adaptive Regression Splines (MARS)
 
 ```{r}
+ctrl1 <- trainControl(method = "cv", number = 5)
 mars_grid = expand.grid(degree = 1:2,
-                        nprune = 2:10)
+                        nprune = 2:39)
 mars.fit = train(x, y,
                  method = "earth",
                  tuneGrid = mars_grid,
                  trControl = ctrl1
                  )
+save(gam.fit, file = "./mars.rda")
+
 ```
 
