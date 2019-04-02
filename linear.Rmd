@@ -1,0 +1,18 @@
+---
+title: "model_building_I"
+author: "Yun He"
+date: "April 2, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## 
+
+```{r}
+
+```
+
