@@ -69,6 +69,28 @@ gam.fit$finalModel
 load(file = "./gam_fit.rda")
 ```
 
+```{r}
+gam = gam( transformed_value ~ nationality + s(positioning) + 
+    s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
+    s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
+    s(free_kick_accuracy) + s(long_shots) + s(heading_accuracy) + 
+    s(curve) + s(stamina) + s(aggression) + s(ball_control) + 
+    s(potential) + s(penalties) + s(gk_handling) + s(short_passing) + 
+    s(gk_diving) + s(gk_reflexes) + s(gk_kicking) + s(gk_positioning) + 
+    s(shot_power) + s(long_passing) + s(acceleration) + s(sprint_speed) + 
+    s(balance) + s(agility) + s(reactions) + s(strength) + s(jumping) + 
+    s(composure) + s(vision) + s(special), data = train)
+
+
+par(mfrow = c(5,8))
+plot(gam)
+```
+
+
+
+
+
+
 
 ## Multivariate Adaptive Regression Splines (MARS)
 
@@ -92,6 +114,15 @@ mars.fit$bestTune
 load(file = "./mars.rda")
 ```
 
+```{r}
+p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
+```
+
+
+
+
+
+
 
 ## Compare those models
 ```{r}
@@ -100,7 +131,7 @@ bwplot(resamples(list(mars = mars.fit,gam = gam.fit)),
 ```
 
 
-## Importance
+## Importance of each variable
 ```{r}
 varImp(mars.fit)
 varImp(gam.fit)
@@ -155,19 +186,4 @@ anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
 
 
 
-```{r}
-gam = gam( transformed_value ~ nationality + s(positioning) + 
-    s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
-    s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
-    s(free_kick_accuracy) + s(long_shots) + s(heading_accuracy) + 
-    s(curve) + s(stamina) + s(aggression) + s(ball_control) + 
-    s(potential) + s(penalties) + s(gk_handling) + s(short_passing) + 
-    s(gk_diving) + s(gk_reflexes) + s(gk_kicking) + s(gk_positioning) + 
-    s(shot_power) + s(long_passing) + s(acceleration) + s(sprint_speed) + 
-    s(balance) + s(agility) + s(reactions) + s(strength) + s(jumping) + 
-    s(composure) + s(vision) + s(special), data = train)
 
-save(gam, file = "./gam.rda")
-
-plot(gam)
-```
