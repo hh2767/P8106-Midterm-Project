@@ -2,7 +2,9 @@
 title: "Nonlinear"
 author: "JunLu"
 date: "4/1/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -33,7 +35,7 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./train.csv")
+train = read_csv("./non-linear/train.csv")
 
 y = train$transformed_value
 
@@ -50,7 +52,7 @@ set.seed(1)
 ## Generallized additive model (GAM)
 
 ### Use caret package
-```{r}
+```{r, echo=FALSE}
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
                 method = "gam",
@@ -59,15 +61,15 @@ gam.fit = train(x, y,
                 trControl = ctrl1)
 
 save(gam.fit, file = "./gam_fit.rda")
+```
 
+```{r}
 load(file = "./gam_fit.rda")
-
 gam.fit$bestTune
 gam.fit$finalModel
 ```
 
-
-```{r}
+```{r, echo=FALSE}
 gam = gam( transformed_value ~ nationality + s(positioning) + 
     s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
     s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
@@ -80,14 +82,88 @@ gam = gam( transformed_value ~ nationality + s(positioning) +
     s(composure) + s(vision) + s(special), data = train)
 
 save(gam, file = "./gam.rda")
+```
 
+```{r}
+load(file = "./gam.rda")
+par(mfrow = c(1,4)) 
 plot(gam)
 ```
 
 
 
-### Set the model by exploratory analysis
+
+
+## Multivariate Adaptive Regression Splines (MARS)
+
+```{r, echo=FALSE}
+ctrl1 <- trainControl(method = "cv", number = 10)
+mars_grid = expand.grid(degree = 1:2,
+                        nprune = 2:38)
+mars.fit = train(x, y,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 trControl = ctrl1
+                 )
+save(mars.fit, file = "./mars.rda")
+```
+
 ```{r}
+load(file = "./mars.rda")
+
+summary(mars.fit)
+mars.fit$bestTune
+```
+
+
+
+
+```{r}
+p1 = partial(mars.fit, pred.var =c("age"), grid.resolution = 10) %>% autoplot()
+p2 = partial(mars.fit, pred.var =c("potential"), grid.resolution = 10) %>% autoplot()
+p3 = partial(mars.fit, pred.var =c("special"), grid.resolution = 10) %>% autoplot()
+p4 = partial(mars.fit, pred.var =c("balance"), grid.resolution = 10) %>% autoplot()
+p5 = partial(mars.fit, pred.var =c("gk_diving"), grid.resolution = 10) %>% autoplot()
+p6 = partial(mars.fit, pred.var =c("gk_handling"), grid.resolution = 10) %>% autoplot()
+p7 = partial(mars.fit, pred.var =c("gk_kicking"), grid.resolution = 10) %>% autoplot()
+p8 = partial(mars.fit, pred.var =c("gk_positioning"), grid.resolution = 10) %>% autoplot()
+p9 = partial(mars.fit, pred.var =c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
+p10 = partial(mars.fit, pred.var =c("reactions"), grid.resolution = 10) %>% autoplot()
+p11 = partial(mars.fit, pred.var =c("strength"), grid.resolution = 10) %>% autoplot()
+p12 = partial(mars.fit, pred.var =c("vision"), grid.resolution = 10) %>% autoplot()
+
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
+```
+
+
+## Compare those models
+```{r}
+bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+```
+
+
+## Importance
+```{r}
+varImp(mars.fit)
+varImp(gam.fit)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Set the model by exploratory analysis
+```{r, echo=FALSE}
 gam.m1 = gam(transformed_value ~ age + nationality + potential + special + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
                  dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
@@ -122,40 +198,3 @@ gam.m4 = gam(transformed_value ~ s(age) + nationality + s(potential) + s(special
 
 anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
 ```
-
-## Multivariate Adaptive Regression Splines (MARS)
-
-```{r}
-ctrl1 <- trainControl(method = "cv", number = 10)
-mars_grid = expand.grid(degree = 1:2,
-                        nprune = 2:38)
-mars.fit = train(x, y,
-                 method = "earth",
-                 tuneGrid = mars_grid,
-                 trControl = ctrl1
-                 )
-save(gam.fit, file = "./mars.rda")
-
-summary(mars.fit)
-
-mars.fit$bestTune
-```
-
-```{r}
-p1 <-partial(mars.fit, pred.var =c("age"), grid.resolution = 10)%>% autoplot()
-p1
-```
-
-
-## Compare those models
-```{r}
-bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
-       metric = "RMSE")
-```
-
-## Importance
-```{r}
-varImp(mars.fit)
-varImp(gam.fit)
-```
-
