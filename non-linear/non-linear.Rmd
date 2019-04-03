@@ -33,9 +33,10 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./train.csv") %>% 
-    select(-na_count)
+train = read_csv("./train.csv")
+
 y = train$transformed_value
+
 x = model.matrix(transformed_value ~ ., train)[,-1] 
 ```
 
@@ -50,35 +51,44 @@ set.seed(1)
 
 ### Use caret package
 ```{r}
-ctrl1 <- trainControl(method = "cv", number = 5)
+ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
-                 method = "gam",
-                 tuneGrid = data.frame(method = "GCV.Cp", 
-                                       select = c(TRUE,FALSE)), 
-                 trControl = ctrl1)
+                method = "gam",
+                tuneGrid = data.frame(method = "GCV.Cp", 
+                                      select = c(TRUE,FALSE)), 
+                trControl = ctrl1)
 
 save(gam.fit, file = "./gam_fit.rda")
 
-# load(file = "./gam_fit.rda")
+load(file = "./gam_fit.rda")
 
 gam.fit$bestTune
 gam.fit$finalModel
 ```
+
+
 ```{r}
-gam = gam(transformed_value ~ age + nationality + club + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
-                 standing_tackle + strength + vision + volleys, data = train)
+gam = gam( transformed_value ~ nationality + s(positioning) + 
+    s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
+    s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
+    s(free_kick_accuracy) + s(long_shots) + s(heading_accuracy) + 
+    s(curve) + s(stamina) + s(aggression) + s(ball_control) + 
+    s(potential) + s(penalties) + s(gk_handling) + s(short_passing) + 
+    s(gk_diving) + s(gk_reflexes) + s(gk_kicking) + s(gk_positioning) + 
+    s(shot_power) + s(long_passing) + s(acceleration) + s(sprint_speed) + 
+    s(balance) + s(agility) + s(reactions) + s(strength) + s(jumping) + 
+    s(composure) + s(vision) + s(special), data = train)
+
+save(gam, file = "./gam.rda")
+
+plot(gam)
 ```
 
 
 
 ### Set the model by exploratory analysis
 ```{r}
-gam.m1 = gam(transformed_value ~ age + nationality + club + potential + special + acceleration 
+gam.m1 = gam(transformed_value ~ age + nationality + potential + special + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
                  dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
                  gk_positioning + gk_reflexes + heading_accuracy + interceptions +
@@ -86,7 +96,7 @@ gam.m1 = gam(transformed_value ~ age + nationality + club + potential + special 
                  reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
                  standing_tackle + strength + vision + volleys, data = train)
 
-gam.m2 = gam(transformed_value ~ s(age) + nationality + club + potential + special + acceleration 
+gam.m2 = gam(transformed_value ~ s(age) + nationality  + potential + special + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
                  dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
                  gk_positioning + gk_reflexes + heading_accuracy + interceptions +
@@ -94,7 +104,7 @@ gam.m2 = gam(transformed_value ~ s(age) + nationality + club + potential + speci
                  reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
                  standing_tackle + strength + vision + volleys, data = train)
 
-gam.m3 = gam(transformed_value ~ s(age) + nationality + club + potential + special + acceleration 
+gam.m3 = gam(transformed_value ~ s(age) + nationality + potential + special + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
                  dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
                  gk_positioning + gk_reflexes + heading_accuracy + interceptions +
@@ -102,10 +112,10 @@ gam.m3 = gam(transformed_value ~ s(age) + nationality + club + potential + speci
                  s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
                  stamina + standing_tackle + strength + vision + volleys, data = train)
 
-gam.m4 = gam(transformed_value ~ s(age) + nationality + club + s(potential) + s(special) + acceleration 
+gam.m4 = gam(transformed_value ~ s(age) + nationality + s(potential) + s(special) + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
+                 dribbling + finishing + s(free_kick_accuracy) + s(gk_diving) + gk_handling + gk_kicking +
+                 s(gk_positioning) + s(gk_reflexes) + heading_accuracy + interceptions +
                  jumping + long_passing + long_shots + marking + penalties + positioning +
                  s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
                  stamina + standing_tackle + strength + vision + volleys, data = train)
@@ -116,9 +126,9 @@ anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
 ## Multivariate Adaptive Regression Splines (MARS)
 
 ```{r}
-ctrl1 <- trainControl(method = "cv", number = 5)
+ctrl1 <- trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:2,
-                        nprune = 2:39)
+                        nprune = 2:38)
 mars.fit = train(x, y,
                  method = "earth",
                  tuneGrid = mars_grid,
@@ -126,5 +136,25 @@ mars.fit = train(x, y,
                  )
 save(gam.fit, file = "./mars.rda")
 
+summary(mars.fit)
+
+mars.fit$bestTune
+```
+
+```{r}
+
+```
+
+
+## Compare those models
+```{r}
+bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+```
+
+## Importance
+```{r}
+varImp(mars.fit)
+varImp(gam.fit)
 ```
 
