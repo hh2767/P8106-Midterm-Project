@@ -141,12 +141,17 @@ varImp(pls.fit)
 ## summarize
 
 ```{r}
+load(file = "./non-linear/gam_fit.rda")
+load(file = "./non-linear/earth.rda")
 resamp <- resamples(list(lasso = lasso.fit, 
                          ridge = ridge.fit,
                          enet = enet.fit,
                          pcr = pcr.fit, 
                          pls = pls.fit,
-                         lm = lm.fit))
+                         lm = lm.fit,
+                         gam = gam.fit,
+                         mars = mars.fit
+                         ))
 summary(resamp)
 
 bwplot(resamp, metric = "RMSE")
