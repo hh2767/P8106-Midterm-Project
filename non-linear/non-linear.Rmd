@@ -28,14 +28,14 @@ library(gam)
 library(mgcv)
 library(boot)
 library(pdp)
-library(earth)
+# library(earth)
 ```
 
 
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./non-linear/train.csv")
+train = read_csv("./train.csv")
 
 y = train$transformed_value
 
@@ -52,7 +52,7 @@ set.seed(1)
 ## Generallized additive model (GAM)
 
 ### Use caret package
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
                 method = "gam",
@@ -69,7 +69,7 @@ gam.fit$bestTune
 gam.fit$finalModel
 ```
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 gam = gam( transformed_value ~ nationality + s(positioning) + 
     s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
     s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
@@ -96,7 +96,7 @@ plot(gam)
 
 ## Multivariate Adaptive Regression Splines (MARS)
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 ctrl1 <- trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:2,
                         nprune = 2:38)
@@ -110,13 +110,9 @@ save(mars.fit, file = "./mars.rda")
 
 ```{r}
 load(file = "./mars.rda")
-
-summary(mars.fit)
-mars.fit$bestTune
+# summary(mars.fit)
+# mars.fit$bestTune
 ```
-
-
-
 
 ```{r}
 p1 = partial(mars.fit, pred.var =c("age"), grid.resolution = 10) %>% autoplot()
@@ -163,7 +159,7 @@ varImp(gam.fit)
 
 
 ### Set the model by exploratory analysis
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 gam.m1 = gam(transformed_value ~ age + nationality + potential + special + acceleration 
              + aggression + agility + balance + ball_control + composure + crossing + curve + 
                  dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +

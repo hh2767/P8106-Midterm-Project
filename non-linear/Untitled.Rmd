@@ -1,0 +1,15 @@
+---
+title: "Untitled"
+author: "JunLu"
+date: "4/3/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+load(file = "./earth.rda")
+summary(mars.fit)
+mars.fit$bestTune
+```
+
