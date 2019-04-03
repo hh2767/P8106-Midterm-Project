@@ -46,6 +46,7 @@ x = model.matrix(transformed_value ~ ., train)[,-1]
 set.seed(1)
 ```
 
+
 ## Generallized additive model (GAM)
 
 ### Use caret package
@@ -59,15 +60,12 @@ gam.fit = train(x, y,
 
 save(gam.fit, file = "./gam_fit.rda")
 
-
+load(file = "./gam_fit.rda")
 
 gam.fit$bestTune
 gam.fit$finalModel
 ```
 
-```{r}
-load(file = "./gam_fit.rda")
-```
 
 ```{r}
 gam = gam( transformed_value ~ nationality + s(positioning) + 
@@ -81,69 +79,10 @@ gam = gam( transformed_value ~ nationality + s(positioning) +
     s(balance) + s(agility) + s(reactions) + s(strength) + s(jumping) + 
     s(composure) + s(vision) + s(special), data = train)
 
+save(gam, file = "./gam.rda")
 
-par(mfrow = c(5,8))
 plot(gam)
 ```
-
-
-
-
-
-
-
-## Multivariate Adaptive Regression Splines (MARS)
-
-```{r}
-ctrl1 <- trainControl(method = "cv", number = 10)
-mars_grid = expand.grid(degree = 1:2,
-                        nprune = 2:38)
-mars.fit = train(x, y,
-                 method = "earth",
-                 tuneGrid = mars_grid,
-                 trControl = ctrl1
-                 )
-save(mars.fit, file = "./mars.rda")
-
-summary(mars.fit)
-
-mars.fit$bestTune
-```
-
-```{r}
-load(file = "./mars.rda")
-```
-
-```{r}
-p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
-```
-
-
-
-
-
-
-
-## Compare those models
-```{r}
-bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
-       metric = "RMSE")
-```
-
-
-## Importance of each variable
-```{r}
-varImp(mars.fit)
-varImp(gam.fit)
-```
-
-
-
-
-
-
-
-
 
 
 
@@ -184,6 +123,39 @@ gam.m4 = gam(transformed_value ~ s(age) + nationality + s(potential) + s(special
 anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
 ```
 
+## Multivariate Adaptive Regression Splines (MARS)
+
+```{r}
+ctrl1 <- trainControl(method = "cv", number = 10)
+mars_grid = expand.grid(degree = 1:2,
+                        nprune = 2:38)
+mars.fit = train(x, y,
+                 method = "earth",
+                 tuneGrid = mars_grid,
+                 trControl = ctrl1
+                 )
+save(gam.fit, file = "./mars.rda")
+
+summary(mars.fit)
+
+mars.fit$bestTune
+```
+
+```{r}
+p1 <-partial(mars.fit, pred.var =c("age"), grid.resolution = 10)%>% autoplot()
+p1
+```
 
 
+## Compare those models
+```{r}
+bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+```
+
+## Importance
+```{r}
+varImp(mars.fit)
+varImp(gam.fit)
+```
 
