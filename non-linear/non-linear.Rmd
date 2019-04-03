@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE,
+knitr::opts_chunk$set(
                       warning = FALSE,
                       message = FALSE
                       )
@@ -28,7 +28,7 @@ library(gam)
 library(mgcv)
 library(boot)
 library(pdp)
-# library(earth)
+library(earth)
 ```
 
 
@@ -69,29 +69,18 @@ gam.fit$bestTune
 gam.fit$finalModel
 ```
 
-```{r, eval=FALSE}
-gam = gam( transformed_value ~ nationality + s(positioning) + 
-    s(marking) + s(sliding_tackle) + s(standing_tackle) + s(finishing) + 
-    s(volleys) + s(age) + s(crossing) + s(dribbling) + s(interceptions) + 
-    s(free_kick_accuracy) + s(long_shots) + s(heading_accuracy) + 
-    s(curve) + s(stamina) + s(aggression) + s(ball_control) + 
-    s(potential) + s(penalties) + s(gk_handling) + s(short_passing) + 
-    s(gk_diving) + s(gk_reflexes) + s(gk_kicking) + s(gk_positioning) + 
-    s(shot_power) + s(long_passing) + s(acceleration) + s(sprint_speed) + 
-    s(balance) + s(agility) + s(reactions) + s(strength) + s(jumping) + 
-    s(composure) + s(vision) + s(special), data = train)
 
-save(gam, file = "./gam.rda")
-```
+
+
+
+
+
+
 
 ```{r}
-load(file = "./gam.rda")
-par(mfrow = c(1,4)) 
-plot(gam)
+par(mfrow = c(1,3)) 
+plot(gam.fit$finalModel)
 ```
-
-
-
 
 
 ## Multivariate Adaptive Regression Splines (MARS)
@@ -105,13 +94,13 @@ mars.fit = train(x, y,
                  tuneGrid = mars_grid,
                  trControl = ctrl1
                  )
-save(mars.fit, file = "./mars.rda")
+save(mars.fit, file = "./earth.rda")
 ```
 
 ```{r}
-load(file = "./mars.rda")
-# summary(mars.fit)
-# mars.fit$bestTune
+load(file = "./earth.rda")
+summary(mars.fit)
+mars.fit$bestTune
 ```
 
 ```{r}
@@ -144,6 +133,41 @@ bwplot(resamples(list(mars = mars.fit,gam = gam.fit)),
 varImp(mars.fit)
 varImp(gam.fit)
 ```
+
+
+## Questions
+
+1. As we can't use the test dataset to choose our final model, do we need to calculate test error for each model or just our final model. 
+
+Do we write (linear -> nonlinear, if we know it is nonlinear why we try linear firstly)
+
+2. How to know our model is good or not, just with a train error and a test error. (close and both small -> good, train << test overfitted, both large underfitted) However, how do we know it is small or large (MSE also depends on y)
+
+3. Which variables are important? Different models have different important variables. Do we only use the result of our final model?
+
+4. how do we present our model in the report (coefficients? tunning parameter? plot?)
+
+
+5. Model assumptions and limitations
+
+*linear*
+Multi linear: model linear in parameter (error term mean 0 constant variance uncorrelated)
+
+lasso and ridge: linear (Anything else? Multicollinearity?)
+
+pcr: linear (Anything else? Multicollinearity?)
+
+
+*non-linear*
+gam: Nonlinear relationship (Anything else?)
+mars: Nonlinear relationship (Anything else)
+
+6. How to choose tunning parameters?
+like we try lambda from (e^-10, e^10), then we choose the best lambda by 10-fold cross vaildation.
+
+7.How do we know model is enough flexible? How do we make prediction?
+
+
 
 
 

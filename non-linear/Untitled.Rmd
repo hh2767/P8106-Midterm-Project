@@ -8,8 +8,7 @@ output:
 ---
 
 ```{r}
-load(file = "./earth.rda")
-summary(mars.fit)
-mars.fit$bestTune
+load(file = "./gam.rda")
+summary(gam)
 ```
 
