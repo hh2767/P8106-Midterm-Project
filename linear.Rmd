@@ -14,7 +14,7 @@ library(glmnet)
 
 ## import data
 
-```{r}
+```{r, message=FALSE}
 train = read_csv("./data/train.csv")
 test = read_csv("./data/test.csv")
 
