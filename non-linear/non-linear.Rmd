@@ -35,7 +35,7 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./train.csv")
+train = read_csv("./non-linear/train.csv")
 
 y = train$transformed_value
 options(na.action = 'na.pass')
@@ -101,7 +101,7 @@ mars.fit$bestTune
 ```{r}
 p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
 p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 10) %>% autoplot()
-p3 = partial(mars.fit, pred.var =c("special"), grid.resolution = 10) %>% autoplot()
+p3 = partial(mars.fit, pred.var =c("agility"), grid.resolution = 10) %>% autoplot()
 p4 = partial(mars.fit, pred.var =c("balance"), grid.resolution = 10) %>% autoplot()
 p5 = partial(mars.fit, pred.var =c("gk_diving"), grid.resolution = 10) %>% autoplot()
 p6 = partial(mars.fit, pred.var =c("gk_handling"), grid.resolution = 10) %>% autoplot()
@@ -110,7 +110,6 @@ p8 = partial(mars.fit, pred.var =c("gk_positioning"), grid.resolution = 10) %>% 
 p9 = partial(mars.fit, pred.var =c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
 p10 = partial(mars.fit, pred.var =c("reactions"), grid.resolution = 10) %>% autoplot()
 p11 = partial(mars.fit, pred.var =c("strength"), grid.resolution = 10) %>% autoplot()
-p12 = partial(mars.fit, pred.var =c("vision"), grid.resolution = 10) %>% autoplot()
 
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
 ```
@@ -136,7 +135,12 @@ varImp(gam.fit)
 
 Do we write (linear -> nonlinear, if we know it is nonlinear why we try linear firstly)
 
+depend on oursevles
+
+
 2. How to know our model is good or not, just with a train error and a test error. (close and both small -> good, train << test overfitted, both large underfitted) However, how do we know it is small or large (MSE also depends on y)
+
+can't
 
 3. Which variables are important? Different models have different important variables. Do we only use the result of our final model?
 
