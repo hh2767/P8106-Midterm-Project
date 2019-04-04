@@ -84,6 +84,81 @@ data[trans2int_cols] = map(data[trans2int_cols], as.integer)
 data[trans2fct_cols] = map(data[trans2fct_cols], as.factor)
 ```
 
+
+```{r}
+
+data = data %>% 
+    mutate(nationality = as.character(nationality))
+
+eu = c("Germany", "Spain", "Italy", "Belgium", "Slovenia", "France", "Czech Republic", "Croatia", "Switzerland", "Portugal", "Denmark", "Poland", "Greece", "Bosnia Herzegovina", "England", "Norway", "Netherlands", "Finland", "Russia", "Turkey", "Ukraine", "Romania", "Albania", "Hungary", "Lithuania", "Republic of Ireland", "Austria", "Sweden", "Wales", "Scotland", "Bulgaria", "Serbia", "Georgia", "Kosovo", "Slovakia", "Latvia", "Belarus", "FYR Macedonia", "Northern Ireland", "Iceland", "Luxembourg",
+       "Montenegro", "Israel", "San Marino")
+as = c("China PR", "Korea Republic", "Japan", "Oman", "Saudi Arabia", "Egypt", "Iran",
+       "Philippines", "India", "Lebanon", "Senegal", "Morocco",  "Comoros", "Nigeria", "Algeria", "Ivory Coast", "Ghana", "DR Congo", "Benin", "Kenya", "Equatorial Guinea", "Gabon", " Burkina Faso", "Congo", "Tunisia", "Cape Verde", "Angola")
+af = c("Cameroon", "South Africa", "Mali")
+na = c("United States", "Guatemala", "Canada", "Puerto Rico", "Haiti", "Bermuda")
+sa = c("Costa Rica", "Argentina", "Brazil", "Uruguay", "Chile", "Colombia", "Mexico", "Venezuela", "Curacao", "Peru", "Paraguay", "Ecuador", "Bolivia")
+oc = c("Australia", "New Zealand")
+
+nation_eu = function(name){
+  if (name %in% eu)
+      name_new = "eu"
+  else if (name %in% as)
+      name_new = "as"
+  else if (name %in% na)
+      name_new = "na"
+  else if (name %in% sa)
+      name_new = "sa"
+  else if (name %in% oc)
+      name_new = "oc"
+  else name_new = "af"
+  name_new
+}
+
+
+data = data %>% 
+    mutate(nationality = map(.x = nationality, ~nation_eu(.x))) %>% 
+    mutate(nationality = as.factor(unlist(nationality)))
+
+
+```
+
+##Transform the outcome(value)
+
+```{r}
+data %>% 
+    ggplot(aes(x = value)) + geom_density(fill = "navy") + theme_bw()
+```
+
+The outcome data is skewed, so I transformed it. New_value = Old_value^(1/4)
+
+```{r}
+#The effect of log transformation is not ideal
+#data = data %>%
+#   mutate(value = log(value + 2)
+
+data = data %>% 
+    mutate(value = value^(1/4)) %>% 
+    rename("transformed_value" = value)
+
+data %>% 
+    ggplot(aes(x = transformed_value)) + geom_density(fill = "navy") + theme_bw()
+```
+
+After tramsformation, the distribution of the outcome is less skewed. There are a lot of 0 values becaues there are many players that do not belong to any club.
+
+
+#Split the data set into training and testing data
+
+```{r}
+trRows = createDataPartition(data$transformed_value, p = .75, list = FALSE)
+data_split = data %>% 
+    select(-club)
+train = data_split[trRows,] %>% write_csv("..\\exploratory analysis\\train.csv")
+test = data_split[-trRows,] %>% write_csv("..\\exploratory analysis\\test.csv")
+```
+
+Training and testing datasets can be found in the exploratory analysis folder. There are also copies of the training and testing datasets in the "Data" folder.
+
 ##Checking and replacing NA's
 
 First, I checked missing data for each observation. Since a lot of NA's are caused by missing position score data of goal keepers, and These NA's do not matter, I will amalyze goal-keeper data and non goal-keeper data seperately.
@@ -172,43 +247,6 @@ for (i in 1:13) {
 #sapply(data, function(x) sum(is.na(x))) #no NA's in any column
 ```
 
-```{r}
-a = unique(data$nationality) %>% tibble()
-
-data = data %>% 
-    mutate(nationality = as.character(nationality))
-
-eu = c("Germany", "Spain", "Italy", "Belgium", "Slovenia", "France", "Czech Republic", "Croatia", "Switzerland", "Portugal", "Denmark", "Poland", "Greece", "Bosnia Herzegovina", "England", "Norway", "Netherlands", "Finland", "Russia", "Turkey", "Ukraine", "Romania", "Albania", "Hungary", "Lithuania", "Republic of Ireland", "Austria", "Sweden", "Wales", "Scotland", "Bulgaria", "Serbia", "Georgia", "Kosovo", "Slovakia", "Latvia", "Belarus", "FYR Macedonia", "Northern Ireland", "Iceland", "Luxembourg",
-       "Montenegro", "Israel", "San Marino")
-as = c("China PR", "Korea Republic", "Japan", "Oman", "Saudi Arabia", "Egypt", "Iran",
-       "Philippines", "India", "Lebanon", "Senegal", "Morocco",  "Comoros", "Nigeria", "Algeria", "Ivory Coast", "Ghana", "DR Congo", "Benin", "Kenya", "Equatorial Guinea", "Gabon", " Burkina Faso", "Congo", "Tunisia", "Cape Verde", "Angola")
-af = c("Cameroon", "South Africa", "Mali")
-na = c("United States", "Guatemala", "Canada", "Puerto Rico", "Haiti", "Bermuda")
-sa = c("Costa Rica", "Argentina", "Brazil", "Uruguay", "Chile", "Colombia", "Mexico", "Venezuela", "Curacao", "Peru", "Paraguay", "Ecuador", "Bolivia")
-oc = c("Australia", "New Zealand")
-
-nation_eu = function(name){
-  if (name %in% eu)
-      name_new = "eu"
-  else if (name %in% as)
-      name_new = "as"
-  else if (name %in% na)
-      name_new = "na"
-  else if (name %in% sa)
-      name_new = "sa"
-  else if (name %in% oc)
-      name_new = "oc"
-  else name_new = "af"
-  name_new
-}
-
-
-data = data %>% 
-    mutate(nationality = map(.x = nationality, ~nation_eu(.x))) %>% 
-    mutate(nationality = as.factor(unlist(nationality)))
-
-
-```
 
 
 #Tables for descriptive statistics
@@ -238,29 +276,6 @@ bind_rows(descrip_list[[2]] , descrip_list[[3]]) %>%
 
 #Figures for descriptive statistics
 
-##For the outcome(value)
-
-```{r}
-data %>% 
-    ggplot(aes(x = value)) + geom_density(fill = "navy") + theme_bw()
-```
-
-The outcome data is skewed, so I transformed it. New_value = Old_value^(1/4)
-
-```{r}
-#The effect of log transformation is not ideal
-#data = data %>%
-#   mutate(value = log(value + 2)
-
-data = data %>% 
-    mutate(value = value^(1/4)) %>% 
-    rename("transformed_value" = value)
-
-data %>% 
-    ggplot(aes(x = transformed_value)) + geom_density(fill = "navy") + theme_bw()
-```
-
-After tramsformation, the distribution of the outcome is less skewed. There are a lot of 0 values becaues there are many players that do not belong to any club.
 
 ##Check the distribution for each numeric/integer predictor
 
@@ -500,16 +515,6 @@ corrplot(cor(cor_data), tl.cex = 1.2)
 
 This plot shows that scores that are specificly measured for goal keepers(i.e. variable whose names start with "gk_") are highly correlated.
 
-#Split the data set into training and testing data
 
-```{r}
-trRows = createDataPartition(data$transformed_value, p = .75, list = FALSE)
-data = data %>% 
-    select(-club, -na_count)
-train = data[trRows,] %>% write_csv("..\\exploratory analysis\\train.csv")
-test = data[-trRows,] %>% write_csv("..\\exploratory analysis\\test.csv")
-```
-
-Training and testing datasets can be found in the exploratory analysis folder. There are also copies of the training and testing datasets in the "Data" folder.
 
 
