@@ -35,7 +35,7 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./train.csv")
+train = read_csv("./non-linear/train.csv")
 
 y = train$transformed_value
 
@@ -56,6 +56,7 @@ set.seed(1)
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
                 method = "gam",
+                preProcess = "medianImpute",
                 tuneGrid = data.frame(method = "GCV.Cp", 
                                       select = c(TRUE,FALSE)), 
                 trControl = ctrl1)
@@ -68,13 +69,6 @@ load(file = "./gam_fit.rda")
 gam.fit$bestTune
 gam.fit$finalModel
 ```
-
-
-
-
-
-
-
 
 
 ```{r}
@@ -91,6 +85,7 @@ mars_grid = expand.grid(degree = 1:2,
                         nprune = 2:38)
 mars.fit = train(x, y,
                  method = "earth",
+                 preProcess = "medianImpute",
                  tuneGrid = mars_grid,
                  trControl = ctrl1
                  )
@@ -168,53 +163,3 @@ like we try lambda from (e^-10, e^10), then we choose the best lambda by 10-fold
 7.How do we know model is enough flexible? How do we make prediction?
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Set the model by exploratory analysis
-```{r, eval=FALSE}
-gam.m1 = gam(transformed_value ~ age + nationality + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
-                 standing_tackle + strength + vision + volleys, data = train)
-
-gam.m2 = gam(transformed_value ~ s(age) + nationality  + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
-                 standing_tackle + strength + vision + volleys, data = train)
-
-gam.m3 = gam(transformed_value ~ s(age) + nationality + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
-                 stamina + standing_tackle + strength + vision + volleys, data = train)
-
-gam.m4 = gam(transformed_value ~ s(age) + nationality + s(potential) + s(special) + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + s(free_kick_accuracy) + s(gk_diving) + gk_handling + gk_kicking +
-                 s(gk_positioning) + s(gk_reflexes) + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
-                 stamina + standing_tackle + strength + vision + volleys, data = train)
-
-anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
-```
