@@ -38,7 +38,7 @@ The anticipated data source of our project is a soccer player information databa
 (I made some changes to many variables, details are described in "Exploratory_analysis.Rmd/pdf").
 
 ```{r}
-fifa = read_csv("..\\Data\\CompleteDataset.csv")
+fifa = read_csv("./Data/CompleteDataset.csv")
 
 ```
 
@@ -122,13 +122,19 @@ data = data %>%
 
 ```
 
-##Transform the outcome(value)
+#Split the data set into training and testing data
 
 ```{r}
-data %>% 
-    ggplot(aes(x = value)) + geom_density(fill = "navy") + theme_bw()
+trRows = createDataPartition(data$value, p = .75, list = FALSE)
+data_split = data %>% 
+    select(-club)
+train = data_split[trRows,] %>% write_csv("./exploratory analysis/train.csv")
+test = data_split[-trRows,] %>% write_csv("./exploratory analysis/test.csv")
 ```
 
+Training and testing datasets can be found in the exploratory analysis folder. There are also copies of the training and testing datasets in the "Data" folder.
+
+##Transform the outcome(value)
 The outcome data is skewed, so I transformed it. New_value = Old_value^(1/4)
 
 ```{r}
@@ -136,7 +142,10 @@ The outcome data is skewed, so I transformed it. New_value = Old_value^(1/4)
 #data = data %>%
 #   mutate(value = log(value + 2)
 
-data = data %>% 
+train %>% 
+    ggplot(aes(x = value)) + geom_density(fill = "navy") + theme_bw()
+
+data = train %>% 
     mutate(value = value^(1/4)) %>% 
     rename("transformed_value" = value)
 
@@ -147,17 +156,7 @@ data %>%
 After tramsformation, the distribution of the outcome is less skewed. There are a lot of 0 values becaues there are many players that do not belong to any club.
 
 
-#Split the data set into training and testing data
 
-```{r}
-trRows = createDataPartition(data$transformed_value, p = .75, list = FALSE)
-data_split = data %>% 
-    select(-club)
-train = data_split[trRows,] %>% write_csv("..\\exploratory analysis\\train.csv")
-test = data_split[-trRows,] %>% write_csv("..\\exploratory analysis\\test.csv")
-```
-
-Training and testing datasets can be found in the exploratory analysis folder. There are also copies of the training and testing datasets in the "Data" folder.
 
 ##Checking and replacing NA's
 
