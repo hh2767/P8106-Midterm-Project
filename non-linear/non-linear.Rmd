@@ -38,14 +38,8 @@ library(earth)
 train = read_csv("./train.csv")
 
 y = train$transformed_value
-
+options(na.action = 'na.pass')
 x = model.matrix(transformed_value ~ ., train)[,-1] 
-```
-
-## Set a random seed
-
-```{r}
-set.seed(1)
 ```
 
 
@@ -53,8 +47,10 @@ set.seed(1)
 
 ### Use caret package
 ```{r, eval=FALSE}
+set.seed(2)
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
+                preProcess = "medianImpute",
                 method = "gam",
                 tuneGrid = data.frame(method = "GCV.Cp", 
                                       select = c(TRUE,FALSE)), 
@@ -70,13 +66,6 @@ gam.fit$finalModel
 ```
 
 
-
-
-
-
-
-
-
 ```{r}
 par(mfrow = c(1,3)) 
 plot(gam.fit$finalModel)
@@ -86,11 +75,13 @@ plot(gam.fit$finalModel)
 ## Multivariate Adaptive Regression Splines (MARS)
 
 ```{r, eval=FALSE}
+set.seed(2)
 ctrl1 <- trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:2,
                         nprune = 2:38)
 mars.fit = train(x, y,
                  method = "earth",
+                 preProcess = "medianImpute",
                  tuneGrid = mars_grid,
                  trControl = ctrl1
                  )
@@ -104,20 +95,19 @@ mars.fit$bestTune
 ```
 
 ```{r}
-p1 = partial(mars.fit, pred.var =c("age"), grid.resolution = 10) %>% autoplot()
-p2 = partial(mars.fit, pred.var =c("potential"), grid.resolution = 10) %>% autoplot()
-p3 = partial(mars.fit, pred.var =c("special"), grid.resolution = 10) %>% autoplot()
-p4 = partial(mars.fit, pred.var =c("balance"), grid.resolution = 10) %>% autoplot()
-p5 = partial(mars.fit, pred.var =c("gk_diving"), grid.resolution = 10) %>% autoplot()
-p6 = partial(mars.fit, pred.var =c("gk_handling"), grid.resolution = 10) %>% autoplot()
-p7 = partial(mars.fit, pred.var =c("gk_kicking"), grid.resolution = 10) %>% autoplot()
-p8 = partial(mars.fit, pred.var =c("gk_positioning"), grid.resolution = 10) %>% autoplot()
-p9 = partial(mars.fit, pred.var =c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
-p10 = partial(mars.fit, pred.var =c("reactions"), grid.resolution = 10) %>% autoplot()
-p11 = partial(mars.fit, pred.var =c("strength"), grid.resolution = 10) %>% autoplot()
-p12 = partial(mars.fit, pred.var =c("vision"), grid.resolution = 10) %>% autoplot()
+p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
+p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 10) %>% autoplot()
+p3 = partial(mars.fit, pred.var = c("agility"), grid.resolution = 10) %>% autoplot()
+p4 = partial(mars.fit, pred.var = c("balance"), grid.resolution = 10) %>% autoplot()
+p5 = partial(mars.fit, pred.var = c("gk_diving"), grid.resolution = 10) %>% autoplot()
+p6 = partial(mars.fit, pred.var = c("gk_handling"), grid.resolution = 10) %>% autoplot()
+p7 = partial(mars.fit, pred.var = c("gk_kicking"), grid.resolution = 10) %>% autoplot()
+p8 = partial(mars.fit, pred.var = c("gk_positioning"), grid.resolution = 10) %>% autoplot()
+p9 = partial(mars.fit, pred.var = c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
+p10 = partial(mars.fit, pred.var = c("reactions"), grid.resolution = 10) %>% autoplot()
+p11 = partial(mars.fit, pred.var = c("strength"), grid.resolution = 10) %>% autoplot()
 
-grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, ncol = 3, nrow = 4)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 3, nrow = 4)
 ```
 
 
@@ -141,7 +131,12 @@ varImp(gam.fit)
 
 Do we write (linear -> nonlinear, if we know it is nonlinear why we try linear firstly)
 
+depend on oursevles
+
+
 2. How to know our model is good or not, just with a train error and a test error. (close and both small -> good, train << test overfitted, both large underfitted) However, how do we know it is small or large (MSE also depends on y)
+
+can't
 
 3. Which variables are important? Different models have different important variables. Do we only use the result of our final model?
 
@@ -168,53 +163,3 @@ like we try lambda from (e^-10, e^10), then we choose the best lambda by 10-fold
 7.How do we know model is enough flexible? How do we make prediction?
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Set the model by exploratory analysis
-```{r, eval=FALSE}
-gam.m1 = gam(transformed_value ~ age + nationality + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
-                 standing_tackle + strength + vision + volleys, data = train)
-
-gam.m2 = gam(transformed_value ~ s(age) + nationality  + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 reactions + short_passing + shot_power + sliding_tackle + sprint_speed + stamina +
-                 standing_tackle + strength + vision + volleys, data = train)
-
-gam.m3 = gam(transformed_value ~ s(age) + nationality + potential + special + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + free_kick_accuracy + gk_diving + gk_handling + gk_kicking +
-                 gk_positioning + gk_reflexes + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
-                 stamina + standing_tackle + strength + vision + volleys, data = train)
-
-gam.m4 = gam(transformed_value ~ s(age) + nationality + s(potential) + s(special) + acceleration 
-             + aggression + agility + balance + ball_control + composure + crossing + curve + 
-                 dribbling + finishing + s(free_kick_accuracy) + s(gk_diving) + gk_handling + gk_kicking +
-                 s(gk_positioning) + s(gk_reflexes) + heading_accuracy + interceptions +
-                 jumping + long_passing + long_shots + marking + penalties + positioning +
-                 s(reactions) + short_passing + shot_power + sliding_tackle + sprint_speed + 
-                 stamina + standing_tackle + strength + vision + volleys, data = train)
-
-anova(gam.m1, gam.m2, gam.m3, gam.m4, test = "F")
-```
