@@ -1,10 +1,9 @@
 ---
-title: "EDA_document"
+title: "EDA_new"
 author: "Haoran Hu"
-date: "2019-3-29"
+date: "2019-4-4"
 output: pdf_document
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
@@ -167,9 +166,7 @@ After tramsformation, the distribution of the outcome is less skewed. There are 
 
 
 
-##Checking and replacing NA's
-
-First, I checked missing data for each observation. Since a lot of NA's are caused by missing position score data of goal keepers, and These NA's do not matter, I will amalyze goal-keeper data and non goal-keeper data seperately.
+##Checking NA's
 
 ```{r}
 
@@ -187,16 +184,14 @@ From the plot, it seems to be reasonable to drop observations that have more tha
 
 Next, I:
 
-* dropped observations that have more than 5 missing values
-
 * checked number of NA's in each variable
 
 ```{r fig.height=13, fig.width=11}
-data = data %>% 
-    filter(na_count <= 5)
 
 library(VIM)
-matrixplot(data)
+matrixplot(data[,1:20], labels = c("age","nationality","potential","trans value","special","accelerat","aggression","agility","balance","ball_con","composure","crossing","curve","dribbling","finishing","free_kick","gk_diving","gk_handle","gk_kick","gk_posi"))
+
+matrixplot(data[,20:40], labels = c("gk_reflex", "handl_accu", "interception"))
 
 ```
 
@@ -221,41 +216,6 @@ na_col %>%
 
 In total, 14 variables have missing values. The "club" variable has the largest number of missing values(42 missing values). Note that all the players that have missing "club" values have market values = 0. This actually means they do not belong to any club for the time being. Each of the other variables that have missing values has less than 25 missing values. Compared to the sample size, that's not a big loss of data, and thus all the variables can be kept in the model. 
 
-Therefore, I
-
-* replaced NA's in "club" column with a new category "none"
-
-* replaced NA's in each column except "club" column by the mean of that column. This will be done seperately for goal keepers and for non goal keepers.
-
-```{r}
-#library(mice)
-
-
-# data = data %>% 
-#     mutate(club = forcats::fct_explicit_na(club, na_level = "none"))
-#get the names of variables that have missing values, except for "club"
-# vbls_replace_NA = na_col %>% 
-#     filter(num_of_na > 0 & variable != "club")
-
-#data = complete(mice(data = data, method = "mean", m = 1)) #Too slow
-
-#for variables(except for "club") that have missing values, replace NA's with mean
-# for (i in 1:13) {
-#     vbl_name = vbls_replace_NA$variable[i]
-#     #col_num = which(colnames(data) == vbl_name) %>% 
-#         #as.numeric()
-#        vec = data[vbl_name] %>% 
-#         unlist() %>% 
-#         unname()
-#        #data[is.na(data[,col_num]), col_num] = round(mean(vec, na.rm = TRUE))
-#        data[is.na(data[,vbl_name]), vbl_name] = round(mean(vec, na.rm = TRUE))
-#        
-# }
-
-#sapply(data, function(x) sum(is.na(x))) #no NA's in any column
-```
-
-
 
 #Tables for descriptive statistics
 
@@ -264,7 +224,7 @@ descrip_list = data %>%
     skimr::skim_to_list()
 
 descrip_list[[1]] %>% 
-    select(variable, n_unique) %>% 
+    select(variable, n_unique, missing) %>% 
     dplyr::rename("unique levels" = n_unique) %>% 
     knitr::kable(caption = "Factor variables")
     
@@ -277,7 +237,8 @@ bind_rows(descrip_list[[2]] , descrip_list[[3]]) %>%
                 Median = p50,
                 `3rd Q` = p75,
                 Max = p100,
-                `Std Dev` = sd) %>% 
+                `Std Dev` = sd,
+                missing) %>% 
   knitr::kable(digits = 3, caption = "Integer/numeric variables")
 
 ```
@@ -394,72 +355,6 @@ nation_hist = data %>%
 nation_hist + nation_box
 ```
 
-
-
-
-
-
-```{r}
-#clubs that have the largest number of players
-# club_box = data %>% 
-#     mutate(club = fct_lump(club, 12)) %>% 
-#     mutate(club = fct_infreq(club)) %>% 
-#     mutate(club = fct_rev(club)) %>% 
-#     #move "Other" level to the last:
-#     filter(club != "Other") %>% 
-#     ggplot(aes(x = club, y = transformed_value)) +
-# geom_boxplot() +
-# theme(legend.position = "bottom") +
-# labs( x = NULL) +
-# coord_flip() + theme(axis.text.x = element_text(face = "plain", color = "black", size = 8)) + theme_bw()
-# 
-# club_hist = data %>% 
-#     mutate(club = fct_lump(club, 12)) %>% 
-#     mutate(club = fct_infreq(club)) %>% 
-#     mutate(club = fct_rev(club)) %>% 
-#     #move "Other" level to the last:
-#     filter(club != "Other") %>% 
-#     ggplot(aes(x = club)) +
-#     geom_bar(fill = "navy") +
-#     theme(legend.position = "bottom") +
-#     labs(title = "Player count/transformed_value by club", subtitle = "Clubs with most players. Since numbers of players in different\nclubs do not vary greatly, this plot is not very useful.") +
-#     coord_flip() + theme(axis.text.x = element_text(face = "plain", color = "black", size = 8))  + 
-#     theme_bw()
-# 
-# club_hist + club_box
-```
-
-
-
-```{r}
-#clubs that have the highest player median transformed_values
-# club_box = data %>%
-#     group_by(club) %>% 
-#     mutate(med_by_club = median(transformed_value)) %>% 
-#     ungroup() %>% 
-#     mutate(club = fct_reorder(club, med_by_club)) %>% 
-#     filter(as.integer(club) >= 630) %>%  #get the clubs that have the highest median transformed_values
-#     ggplot(aes(x = club, y = transformed_value)) +
-#     geom_boxplot() +
-#     theme(legend.position = "bottom") +
-#     labs( x = NULL) +
-#     coord_flip() + theme(axis.text.x = element_text(face = "plain", color = "black", size = 8))  + theme_bw()
-# 
-# club_hist = data %>%
-#     group_by(club) %>% 
-#     mutate(med_by_club = median(transformed_value)) %>% 
-#     ungroup() %>% 
-#     mutate(club = fct_reorder(club, med_by_club)) %>% 
-#     filter(as.integer(club) >= 630) %>%  #get the clubs that have the highest median transformed_values
-#     ggplot(aes(x = club)) +
-#     geom_bar(fill = "navy") +
-#     theme(legend.position = "bottom") +
-#     labs(title = "Player count/transformed_value by club", subtitle = "Clubs with highest median player transformed_values. This plot suggests that players' \n transformed_values vary between different clubs") +
-#     coord_flip() + theme(axis.text.x = element_text(face = "plain", color = "black", size = 8))  + theme_bw()
-# 
-# club_hist + club_box
-```
-
 ###for int/num variables
 
 
@@ -518,7 +413,7 @@ The plot would be too large to display if we put in all the variables, so I just
 library(corrplot)
 
 cor_data = data %>% 
-    select(-club, -nationality, -na_count)
+    select(-nationality)
 
 corrplot(cor(cor_data), tl.cex = 1.2)
 ```
