@@ -126,6 +126,54 @@ resamp <- resamples(list(lasso = lasso.fit,
                          ))
 summary(resamp)
 
+par(mfrow=c(1,2))
 bwplot(resamp, metric = "RMSE")
+bwplot(resamp, metric = "Rsquared")
+
+```
+
+```{r}
+x2 <- model.matrix(transformed_value~., test)[,-1]
+y2 <- test$transformed_value
+
+trans <- preProcess(x, method = c("medianImpute"))
+predy2.lm <- predict(lm.fit$finalModel, newdata = data.frame(predict(trans, x2)))
+lm_test=mean((predy2.lm-y2)^2)
+
+trans <- preProcess(x, method = c("center", "scale","medianImpute"))
+predy2.ridge <- predict(ridge.fit$finalModel, newx = predict(trans, x2), 
+                        s = ridge.fit$bestTune$lambda, type = "response")
+ridge_test=mean((predy2.ridge-y2)^2)
+
+predy2.lasso <- predict(lasso.fit$finalModel, newx = predict(trans, x2), 
+                        s = lasso.fit$bestTune$lambda, type = "response")
+lasso_test=mean((predy2.lasso-y2)^2)
+
+predy2.enet <- predict(enet.fit$finalModel, newx = predict(trans, x2), 
+                        s = enet.fit$bestTune$lambda, type = "response")
+enet_test=mean((predy2.enet-y2)^2)
+
+trans <- preProcess(x, method = c("medianImpute"))
+predy2.pcr <- predict(pcr.fit$finalModel, newdata = predict(trans, x2), 
+                       ncomp = pcr.fit$bestTune$ncomp)
+pcr_test=mean((predy2.pcr-y2)^2)
+
+predy2.pls <- predict(pls.fit$finalModel, newdata = predict(trans, x2), 
+                       ncomp = pls.fit$bestTune$ncomp)
+pls_test=mean((predy2.pls-y2)^2)
+
+trans <- preProcess(x, method = c("medianImpute"))
+predy2.gam <- predict(gam.fit$finalModel, newdata = data.frame(predict(trans, x2)))
+gam_test=mean((predy2.gam-y2)^2)
+
+## mars?
+mars <- train(x, y,
+              method = "earth",
+              preProcess = "medianImpute",
+              tuneGrid = data.frame(degree = 1, nprune = 18),
+              trControl = ctrl1)
+predy2.mars <- predict(mars, newdata = predict(trans, x2),
+                       type = "prob")
+mars_test=mean((predy2.mars-y2)^2)
 ```
 
