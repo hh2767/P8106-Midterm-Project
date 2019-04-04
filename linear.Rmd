@@ -28,113 +28,85 @@ library(glmnet)
 train = read_csv("./data/train.csv")
 test = read_csv("./data/test.csv")
 
+options(na.action = 'na.pass')
 x <- model.matrix(transformed_value~., train)[,-1]
 y <- train$transformed_value
-
-x2 <- model.matrix(transformed_value~.,test)[,-1]
-y2 <- test$transformed_value
 ```
 
 ## linear model
 
 ```{r}
+set.seed(2)
 ctrl1 <- trainControl(method = "cv", number = 10)
-set.seed(1)
 lm.fit <- train(x, y,
                 method = "lm",
+                preProcess = "medianImpute",
                 trControl = ctrl1)
-predy2.lm <- predict(lm.fit$finalModel, newdata = data.frame(x2))
-lm_test = mean((predy2.lm-y2)^2)
-
-varImp(lm.fit)
 ```
 
 ## ridge model
 
 ```{r}
-set.seed(1)
+set.seed(2)
 ridge.fit <- train(x, y,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 0, 
                                           lambda = exp(seq(-10, 0, length=100))),
-                   # preProc = c("center", "scale"),
+                   preProc = c("center", "scale", "medianImpute"),
                    trControl = ctrl1)
 plot(ridge.fit, xTrans = function(x) log(x))
-predy2.ridge <- predict(ridge.fit$finalModel, newx = x2, 
-                        s = ridge.fit$bestTune$lambda, type = "response")
-ridge_test = mean((predy2.ridge-y2)^2)
-
-coef(ridge.fit$finalModel,ridge.fit$bestTune$lambda)
-varImp(ridge.fit)
 ```
 
 ## lasso model
 
 ```{r}
-set.seed(1)
+set.seed(2)
 lasso.fit <- train(x, y,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 1, 
                                           lambda = exp(seq(-10, -5, length=100))),
-                   # preProc = c("center", "scale"),
+                   preProc = c("center", "scale", "medianImpute"),
                    trControl = ctrl1)
 plot(lasso.fit, xTrans = function(x) log(x))
-predy2.lasso <- predict(lasso.fit$finalModel, newx = x2, 
-                        s = lasso.fit$bestTune$lambda, type = "response")
-lasso_test = mean((predy2.lasso-y2)^2)
-
-coef(lasso.fit$finalModel,lasso.fit$bestTune$lambda)
-varImp(lasso.fit)
 ```
 
 ## Elastic net
 
 ```{r}
-set.seed(1)
+set.seed(2)
 enet.fit <- train(x, y,
                      method = "glmnet",
                      tuneGrid = expand.grid(alpha = seq(0, 1, length = 5), 
                                             lambda = exp(seq(-10, -5, length=50))),
-                   # preProc = c("center", "scale"),
+                     preProc = c("center", "scale", "medianImpute"),
                      trControl = ctrl1)
 ggplot(enet.fit)
-
-coef(enet.fit$finalModel,enet.fit$bestTune$lambda)
-varImp(enet.fit)
 ```
 
 ## pcr model
 
 ```{r}
-set.seed(1)
+set.seed(2)
 pcr.fit <- train(x, y,
                   method = "pcr",
                   tuneLength = 38,
                   trControl = ctrl1,
+                  preProc = c("medianImpute"),
                   scale = TRUE)
 ggplot(pcr.fit, highlight = TRUE)
-predy2.pcr <- predict(pcr.fit$finalModel, newdata = x2, 
-                       ncomp = pcr.fit$bestTune$ncomp)
-pcr_test = mean((predy2.pcr-y2)^2)
-
-varImp(pcr.fit)
 ```
 
 ## pls model
 
 ```{r}
-set.seed(1)
+set.seed(2)
 pls.fit <- train(x, y,
                  method = "pls",
                  tuneLength = 38,
                  trControl = ctrl1,
+                 preProc = c("medianImpute"),
                  scale = TRUE)
 ggplot(pls.fit, highlight = TRUE)
-predy2.pls <- predict(pls.fit$finalModel, newdata = x2, 
-                       ncomp = pls.fit$bestTune$ncomp)
-pls_test = mean((predy2.pls-y2)^2)
-
-varImp(pls.fit)
 ```
 
 
