@@ -38,14 +38,14 @@ library(earth)
 train = read_csv("./train.csv")
 
 y = train$transformed_value
-
+options(na.action = 'na.pass')
 x = model.matrix(transformed_value ~ ., train)[,-1] 
 ```
 
 ## Set a random seed
 
 ```{r}
-set.seed(1)
+set.seed(2)
 ```
 
 
@@ -55,8 +55,8 @@ set.seed(1)
 ```{r, eval=FALSE}
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
-                method = "gam",
                 preProcess = "medianImpute",
+                method = "gam",
                 tuneGrid = data.frame(method = "GCV.Cp", 
                                       select = c(TRUE,FALSE)), 
                 trControl = ctrl1)
@@ -99,8 +99,8 @@ mars.fit$bestTune
 ```
 
 ```{r}
-p1 = partial(mars.fit, pred.var =c("age"), grid.resolution = 10) %>% autoplot()
-p2 = partial(mars.fit, pred.var =c("potential"), grid.resolution = 10) %>% autoplot()
+p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
+p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 10) %>% autoplot()
 p3 = partial(mars.fit, pred.var =c("special"), grid.resolution = 10) %>% autoplot()
 p4 = partial(mars.fit, pred.var =c("balance"), grid.resolution = 10) %>% autoplot()
 p5 = partial(mars.fit, pred.var =c("gk_diving"), grid.resolution = 10) %>% autoplot()
