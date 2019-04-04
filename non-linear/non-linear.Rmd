@@ -35,7 +35,7 @@ library(earth)
 ## Import the train dataset
 
 ```{r}
-train = read_csv("./non-linear/train.csv")
+train = read_csv("./train.csv")
 
 y = train$transformed_value
 
