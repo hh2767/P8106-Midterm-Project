@@ -166,14 +166,13 @@ trans <- preProcess(x, method = c("medianImpute"))
 predy2.gam <- predict(gam.fit$finalModel, newdata = data.frame(predict(trans, x2)))
 gam_test=mean((predy2.gam-y2)^2)
 
-## mars?
-mars <- train(x, y,
-              method = "earth",
-              preProcess = "medianImpute",
-              tuneGrid = data.frame(degree = 1, nprune = 18),
-              trControl = ctrl1)
-predy2.mars <- predict(mars, newdata = predict(trans, x2),
-                       type = "prob")
+predy2.mars <- predict(mars.fit$finalModel, newdata = data.frame(predict(trans, x2)),
+                       type = "earth")
 mars_test=mean((predy2.mars-y2)^2)
+
+tibble(
+    model = c("linear","ridge","lasso","elastic net","PCR","PLS","MARS","GAM"),
+    test_error = c(lm_test,ridge_test,lasso_test,enet_test,pcr_test,pls_test,mars_test,gam_test)
+) %>% knitr::kable(digits = 4)
 ```
 
