@@ -42,17 +42,12 @@ options(na.action = 'na.pass')
 x = model.matrix(transformed_value ~ ., train)[,-1] 
 ```
 
-## Set a random seed
-
-```{r}
-set.seed(2)
-```
-
 
 ## Generallized additive model (GAM)
 
 ### Use caret package
 ```{r, eval=FALSE}
+set.seed(2)
 ctrl1 <- trainControl(method = "cv", number = 10)
 gam.fit = train(x, y,
                 preProcess = "medianImpute",
@@ -80,6 +75,7 @@ plot(gam.fit$finalModel)
 ## Multivariate Adaptive Regression Splines (MARS)
 
 ```{r, eval=FALSE}
+set.seed(2)
 ctrl1 <- trainControl(method = "cv", number = 10)
 mars_grid = expand.grid(degree = 1:2,
                         nprune = 2:38)
@@ -101,15 +97,15 @@ mars.fit$bestTune
 ```{r}
 p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
 p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 10) %>% autoplot()
-p3 = partial(mars.fit, pred.var =c("agility"), grid.resolution = 10) %>% autoplot()
-p4 = partial(mars.fit, pred.var =c("balance"), grid.resolution = 10) %>% autoplot()
-p5 = partial(mars.fit, pred.var =c("gk_diving"), grid.resolution = 10) %>% autoplot()
-p6 = partial(mars.fit, pred.var =c("gk_handling"), grid.resolution = 10) %>% autoplot()
-p7 = partial(mars.fit, pred.var =c("gk_kicking"), grid.resolution = 10) %>% autoplot()
-p8 = partial(mars.fit, pred.var =c("gk_positioning"), grid.resolution = 10) %>% autoplot()
-p9 = partial(mars.fit, pred.var =c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
-p10 = partial(mars.fit, pred.var =c("reactions"), grid.resolution = 10) %>% autoplot()
-p11 = partial(mars.fit, pred.var =c("strength"), grid.resolution = 10) %>% autoplot()
+p3 = partial(mars.fit, pred.var = c("agility"), grid.resolution = 10) %>% autoplot()
+p4 = partial(mars.fit, pred.var = c("balance"), grid.resolution = 10) %>% autoplot()
+p5 = partial(mars.fit, pred.var = c("gk_diving"), grid.resolution = 10) %>% autoplot()
+p6 = partial(mars.fit, pred.var = c("gk_handling"), grid.resolution = 10) %>% autoplot()
+p7 = partial(mars.fit, pred.var = c("gk_kicking"), grid.resolution = 10) %>% autoplot()
+p8 = partial(mars.fit, pred.var = c("gk_positioning"), grid.resolution = 10) %>% autoplot()
+p9 = partial(mars.fit, pred.var = c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
+p10 = partial(mars.fit, pred.var = c("reactions"), grid.resolution = 10) %>% autoplot()
+p11 = partial(mars.fit, pred.var = c("strength"), grid.resolution = 10) %>% autoplot()
 
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 3, nrow = 4)
 ```
