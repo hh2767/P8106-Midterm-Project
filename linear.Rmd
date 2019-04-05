@@ -127,10 +127,9 @@ resamp <- resamples(list(lasso = lasso.fit,
                          ))
 summary(resamp)
 
-par(mfrow=c(1,2))
-bwplot(resamp, metric = "RMSE")
-bwplot(resamp, metric = "Rsquared")
-
+a=bwplot(resamp, metric = "RMSE")
+b=bwplot(resamp, metric = "Rsquared")
+gridExtra::grid.arrange(a,b,ncol=2,nrow=1)
 ```
 
 ## calculate the train and test error
