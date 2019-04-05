@@ -22,6 +22,7 @@ trellis.par.set(theme1)
 library(tidyverse)
 library(caret)
 library(glmnet)
+library(earth)
 ```
 
 ```{r, message=FALSE}
@@ -132,46 +133,72 @@ bwplot(resamp, metric = "Rsquared")
 
 ```
 
+## calculate the train and test error
+
 ```{r}
 x2 <- model.matrix(transformed_value~., test)[,-1]
 y2 <- test$transformed_value
-
+## lm
 trans <- preProcess(x, method = c("medianImpute"))
+predy.lm <- predict(lm.fit$finalModel)
+lm_train=mean((predy.lm-y)^2)
 predy2.lm <- predict(lm.fit$finalModel, newdata = data.frame(predict(trans, x2)))
 lm_test=mean((predy2.lm-y2)^2)
 
+## ridge, lasso and enet 
 trans <- preProcess(x, method = c("center", "scale","medianImpute"))
+predy.ridge <- predict(ridge.fit$finalModel, newx = predict(trans, x), 
+                        s = ridge.fit$bestTune$lambda, type = "response")
+ridge_train=mean((predy.ridge-y)^2)
 predy2.ridge <- predict(ridge.fit$finalModel, newx = predict(trans, x2), 
                         s = ridge.fit$bestTune$lambda, type = "response")
 ridge_test=mean((predy2.ridge-y2)^2)
 
+predy.lasso <- predict(lasso.fit$finalModel, newx = predict(trans, x), 
+                        s = lasso.fit$bestTune$lambda, type = "response")
+lasso_train=mean((predy.lasso-y)^2)
 predy2.lasso <- predict(lasso.fit$finalModel, newx = predict(trans, x2), 
                         s = lasso.fit$bestTune$lambda, type = "response")
 lasso_test=mean((predy2.lasso-y2)^2)
 
+predy.enet <- predict(enet.fit$finalModel, newx = predict(trans, x), 
+                        s = enet.fit$bestTune$lambda, type = "response")
+enet_train=mean((predy.enet-y)^2)
 predy2.enet <- predict(enet.fit$finalModel, newx = predict(trans, x2), 
                         s = enet.fit$bestTune$lambda, type = "response")
 enet_test=mean((predy2.enet-y2)^2)
 
+## pcr, pls
 trans <- preProcess(x, method = c("medianImpute"))
-predy2.pcr <- predict(pcr.fit$finalModel, newdata = predict(trans, x2), 
+predy.pcr <- predict(pcr.fit$finalModel, ncomp = pcr.fit$bestTune$ncomp)
+pcr_train=mean((predy.pcr-y)^2)
+predy2.pcr <- predict(pcr.fit$finalModel, newdata = predict(trans, x2),
                        ncomp = pcr.fit$bestTune$ncomp)
 pcr_test=mean((predy2.pcr-y2)^2)
 
+predy.pls <- predict(pls.fit$finalModel, ncomp = pls.fit$bestTune$ncomp)
+pls_train=mean((predy.pls-y)^2)
 predy2.pls <- predict(pls.fit$finalModel, newdata = predict(trans, x2), 
                        ncomp = pls.fit$bestTune$ncomp)
 pls_test=mean((predy2.pls-y2)^2)
 
+## gam
 trans <- preProcess(x, method = c("medianImpute"))
+predy.gam <- predict(gam.fit$finalModel)
+gam_train=mean((predy.gam-y)^2)
 predy2.gam <- predict(gam.fit$finalModel, newdata = data.frame(predict(trans, x2)))
 gam_test=mean((predy2.gam-y2)^2)
 
+## mars
+predy.mars <- predict(mars.fit$finalModel, type = "earth")
+mars_train=mean((predy.mars-y)^2)
 predy2.mars <- predict(mars.fit$finalModel, newdata = data.frame(predict(trans, x2)),
                        type = "earth")
 mars_test=mean((predy2.mars-y2)^2)
 
 tibble(
     model = c("linear","ridge","lasso","elastic net","PCR","PLS","MARS","GAM"),
+    train_error = c(lm_train,ridge_train,lasso_train,enet_train,pcr_train,pls_train,mars_train,gam_train),
     test_error = c(lm_test,ridge_test,lasso_test,enet_test,pcr_test,pls_test,mars_test,gam_test)
 ) %>% knitr::kable(digits = 4)
 ```
