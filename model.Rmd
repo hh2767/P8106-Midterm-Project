@@ -154,7 +154,7 @@ varImp(gam.fit)
 ```{r, eval=FALSE}
 set.seed(2)
 mars_grid = expand.grid(degree = 1:2,
-                        nprune = 2:38)
+                        nprune = 2:42)
 mars.fit = train(x, y,
                  method = "earth",
                  preProcess = "medianImpute",
@@ -167,6 +167,7 @@ save(mars.fit, file = "./non-linear/earth.rda")
 ```{r}
 load(file = "./non-linear/earth.rda")
 summary(mars.fit)
+ggplot(mars.fit, highlight = TRUE)
 mars.fit$bestTune
 ```
 
