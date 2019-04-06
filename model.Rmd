@@ -1,0 +1,300 @@
+---
+title: "Model Building"
+date: "April 2, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+                      warning = FALSE,
+                      message = FALSE
+                      )
+```
+
+## library packages
+```{r}
+library(caret)
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col <- rgb(.2, .4, .2, .2) 
+theme1$plot.symbol$pch <- 16
+theme1$plot.line$col <- rgb(.8, .1, .1, 1) 
+theme1$plot.line$lwd <- 2
+theme1$strip.background$col <- rgb(.0, .2, .6, .2)
+trellis.par.set(theme1)
+theme_set(theme_bw() + theme(legend.position = "bottom"))
+library(tidyverse)
+library(caret)
+library(glmnet)
+library(earth)
+library(mgcv)
+library(splines)
+library(gam)
+library(boot)
+library(pdp)
+```
+
+## Import the data
+```{r, message=FALSE}
+train = read_csv("./data/train.csv")
+test = read_csv("./data/test.csv")
+
+options(na.action = 'na.pass')
+x <- model.matrix(transformed_value~., train)[,-1]
+y <- train$transformed_value
+```
+
+## linear model
+
+```{r}
+set.seed(2)
+ctrl1 <- trainControl(method = "cv", number = 10)
+lm.fit <- train(x, y,
+                method = "lm",
+                preProcess = "medianImpute",
+                trControl = ctrl1)
+```
+
+## ridge model
+
+```{r}
+set.seed(2)
+ridge.fit <- train(x, y,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 0, 
+                                          lambda = exp(seq(-10, 0, length=100))),
+                   preProc = c("center", "scale", "medianImpute"),
+                   trControl = ctrl1)
+plot(ridge.fit, xTrans = function(x) log(x))
+```
+
+## lasso model
+
+```{r}
+set.seed(2)
+lasso.fit <- train(x, y,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 1, 
+                                          lambda = exp(seq(-10, -5, length=100))),
+                   preProc = c("center", "scale", "medianImpute"),
+                   trControl = ctrl1)
+plot(lasso.fit, xTrans = function(x) log(x))
+```
+
+## Elastic net
+
+```{r}
+set.seed(2)
+enet.fit <- train(x, y,
+                     method = "glmnet",
+                     tuneGrid = expand.grid(alpha = seq(0, 1, length = 5), 
+                                            lambda = exp(seq(-10, -5, length=50))),
+                     preProc = c("center", "scale", "medianImpute"),
+                     trControl = ctrl1)
+ggplot(enet.fit)
+```
+
+## pcr model
+
+```{r}
+set.seed(2)
+pcr.fit <- train(x, y,
+                  method = "pcr",
+                  tuneLength = 38,
+                  trControl = ctrl1,
+                  preProc = c("medianImpute"),
+                  scale = TRUE)
+ggplot(pcr.fit, highlight = TRUE)
+```
+
+## pls model
+
+```{r}
+set.seed(2)
+pls.fit <- train(x, y,
+                 method = "pls",
+                 tuneLength = 38,
+                 trControl = ctrl1,
+                 preProc = c("medianImpute"),
+                 scale = TRUE)
+ggplot(pls.fit, highlight = TRUE)
+```
+
+## GAM
+```{r, eval=FALSE}
+set.seed(2)
+gam.fit = train(x, y,
+                preProcess = "medianImpute",
+                method = "gam",
+                tuneGrid = data.frame(method = "GCV.Cp", 
+                                      select = c(TRUE,FALSE)), 
+                trControl = ctrl1)
+
+save(gam.fit, file = "./gam_fit.rda")
+```
+
+```{r}
+load(file = "./non-linear/gam_fit.rda")
+gam.fit$bestTune
+gam.fit$finalModel
+```
+
+### Plots of GAM
+```{r}
+par(mfrow = c(1,4)) 
+plot(gam.fit$finalModel)
+```
+
+### Importance of variables in GAM
+```{r}
+varImp(gam.fit)
+```
+
+
+## MARS
+```{r, eval=FALSE}
+set.seed(2)
+mars_grid = expand.grid(degree = 1:2,
+                        nprune = 2:38)
+mars.fit = train(x, y,
+                 method = "earth",
+                 preProcess = "medianImpute",
+                 tuneGrid = mars_grid,
+                 trControl = ctrl1
+                 )
+save(mars.fit, file = "./non-linear/earth.rda")
+```
+
+```{r}
+load(file = "./non-linear/earth.rda")
+summary(mars.fit)
+mars.fit$bestTune
+```
+
+### Plots of MARS
+```{r}
+p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 200) %>% autoplot()
+p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 20) %>% autoplot()
+p3 = partial(mars.fit, pred.var = c("agility"), grid.resolution = 20) %>% autoplot()
+p4 = partial(mars.fit, pred.var = c("balance"), grid.resolution = 70) %>% autoplot()
+p5 = partial(mars.fit, pred.var = c("gk_diving"), grid.resolution = 20) %>% autoplot()
+p6 = partial(mars.fit, pred.var = c("gk_handling"), grid.resolution = 20) %>% autoplot()
+p7 = partial(mars.fit, pred.var = c("gk_kicking"), grid.resolution = 20) %>% autoplot()
+p8 = partial(mars.fit, pred.var = c("gk_positioning"), grid.resolution = 20) %>% autoplot()
+p9 = partial(mars.fit, pred.var = c("gk_reflexes"), grid.resolution = 20) %>% autoplot()
+p10 = partial(mars.fit, pred.var = c("reactions"), grid.resolution = 200) %>% autoplot()
+p11 = partial(mars.fit, pred.var = c("strength"), grid.resolution = 200) %>% autoplot()
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 3, nrow = 4)
+```
+
+### Importance of variables in MARS
+```{r}
+varImp(mars.fit)
+```
+
+### Formula
+$$Y_{transformed} = 0.703 + 0.041X_{Europe} - 0.024h(X_{age} - 29) - 0.057h(X_{age} - 33) + 0.128h(X_{age} - 39)$$ 
+$$- 0.005h(71 -X_{potential}) + 0.017h(X_{potential}-71) -0.002h(61-X_{agility}) - 0.003h(X_{balance} -47)-0.007h(68 - X_{gk\_diving}) $$
+$$+ 0.016h(X_{gk\_diving} - 68) -0.005h(67-X_{gk\_handling}) + 0.014h(X_{gk\_handling}-67)+ 0.009h(X_{gk\_kicking}-72) $$
+$$+ 0.008h(X_{gk\_positioning}-43) + 0.015h(X_{gk\_reflexes}-71) + 0.011h(X_{reactions}-63) - 0.013h(41-X_{strength})$$ 
+
+$$h(x) = x_+$$
+
+
+
+## summarize
+
+```{r}
+load(file = "./non-linear/gam_fit.rda")
+load(file = "./non-linear/earth.rda")
+resamp <- resamples(list(lasso = lasso.fit, 
+                         ridge = ridge.fit,
+                         enet = enet.fit,
+                         pcr = pcr.fit, 
+                         pls = pls.fit,
+                         lm = lm.fit,
+                         gam = gam.fit,
+                         mars = mars.fit
+                         ))
+summary(resamp)
+
+png("rplot.png", width = 800, height = 800)
+a=bwplot(resamp, metric = "RMSE")
+b=bwplot(resamp, metric = "Rsquared")
+c=ggplot(resamp, metric = "RMSE")
+d=ggplot(resamp, metric = "Rsquared")
+gridExtra::grid.arrange(a,b,c,d,ncol=2,nrow=2)
+
+dev.off()
+
+```
+
+## calculate the train and test error
+
+```{r}
+x2 <- model.matrix(transformed_value~., test)[,-1]
+y2 <- test$transformed_value
+## lm
+trans <- preProcess(x, method = c("medianImpute"))
+predy.lm <- predict(lm.fit$finalModel)
+lm_train=mean((predy.lm-y)^2)
+predy2.lm <- predict(lm.fit$finalModel, newdata = data.frame(predict(trans, x2)))
+lm_test=mean((predy2.lm-y2)^2)
+
+## ridge, lasso and enet 
+trans <- preProcess(x, method = c("center", "scale","medianImpute"))
+predy.ridge <- predict(ridge.fit$finalModel, newx = predict(trans, x), 
+                        s = ridge.fit$bestTune$lambda, type = "response")
+ridge_train=mean((predy.ridge-y)^2)
+predy2.ridge <- predict(ridge.fit$finalModel, newx = predict(trans, x2), 
+                        s = ridge.fit$bestTune$lambda, type = "response")
+ridge_test=mean((predy2.ridge-y2)^2)
+
+predy.lasso <- predict(lasso.fit$finalModel, newx = predict(trans, x), 
+                        s = lasso.fit$bestTune$lambda, type = "response")
+lasso_train=mean((predy.lasso-y)^2)
+predy2.lasso <- predict(lasso.fit$finalModel, newx = predict(trans, x2), 
+                        s = lasso.fit$bestTune$lambda, type = "response")
+lasso_test=mean((predy2.lasso-y2)^2)
+
+predy.enet <- predict(enet.fit$finalModel, newx = predict(trans, x), 
+                        s = enet.fit$bestTune$lambda, type = "response")
+enet_train=mean((predy.enet-y)^2)
+predy2.enet <- predict(enet.fit$finalModel, newx = predict(trans, x2), 
+                        s = enet.fit$bestTune$lambda, type = "response")
+enet_test=mean((predy2.enet-y2)^2)
+
+## pcr, pls
+trans <- preProcess(x, method = c("medianImpute"))
+predy.pcr <- predict(pcr.fit$finalModel, ncomp = pcr.fit$bestTune$ncomp)
+pcr_train=mean((predy.pcr-y)^2)
+predy2.pcr <- predict(pcr.fit$finalModel, newdata = predict(trans, x2),
+                       ncomp = pcr.fit$bestTune$ncomp)
+pcr_test=mean((predy2.pcr-y2)^2)
+
+predy.pls <- predict(pls.fit$finalModel, ncomp = pls.fit$bestTune$ncomp)
+pls_train=mean((predy.pls-y)^2)
+predy2.pls <- predict(pls.fit$finalModel, newdata = predict(trans, x2), 
+                       ncomp = pls.fit$bestTune$ncomp)
+pls_test=mean((predy2.pls-y2)^2)
+
+## gam
+trans <- preProcess(x, method = c("medianImpute"))
+predy.gam <- predict(gam.fit$finalModel)
+gam_train=mean((predy.gam-y)^2)
+predy2.gam <- predict(gam.fit$finalModel, newdata = data.frame(predict(trans, x2)))
+gam_test=mean((predy2.gam-y2)^2)
+
+## mars
+predy.mars <- predict(mars.fit$finalModel, type = "earth")
+mars_train=mean((predy.mars-y)^2)
+predy2.mars <- predict(mars.fit$finalModel, newdata = data.frame(predict(trans, x2)),
+                       type = "earth")
+mars_test=mean((predy2.mars-y2)^2)
+
+tibble(
+    model = c("linear","ridge","lasso","elastic net","PCR","PLS","MARS","GAM"),
+    train_error = c(lm_train,ridge_train,lasso_train,enet_train,pcr_train,pls_train,mars_train,gam_train),
+    test_error = c(lm_test,ridge_test,lasso_test,enet_test,pcr_test,pls_test,mars_test,gam_test)
+) %>% knitr::kable(digits = 4)
+```
+
