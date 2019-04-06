@@ -218,14 +218,12 @@ resamp <- resamples(list(lasso = lasso.fit,
                          ))
 summary(resamp)
 
-png("rplot.png", width = 800, height = 800)
 a=bwplot(resamp, metric = "RMSE")
 b=bwplot(resamp, metric = "Rsquared")
 c=ggplot(resamp, metric = "RMSE")
 d=ggplot(resamp, metric = "Rsquared")
 gridExtra::grid.arrange(a,b,c,d,ncol=2,nrow=2)
 
-dev.off()
 
 ```
 
