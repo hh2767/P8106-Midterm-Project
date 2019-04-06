@@ -1,0 +1,99 @@
+---
+title: "variable description"
+author: "Haoran Hu"
+date: "2019-3-29"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Description of all the variables in the tidy dataset
+
+##response:
+
+* `value`: (num)market value of players
+
+##Variables that are potential predictors:
+
+* `age`: (int)age of players
+
+* `continent`: (fct)continent where the player is from
+
+* `potential`: (int)score of players' potential
+
+* `club`: (fct)club of players
+
+* `special`: (int)aggregated score of players' several special features, such as international reputation
+
+* `acceleration`: (int)score of players' acceleration ability
+
+* `aggression`: (int)score evaluating players' level of aggression
+
+* `agility`: (int)score of players' agility
+
+* `balance`: (int)score of players' balancing ability
+
+* `ball control`: (int)score of players' ball control ability
+
+* `composure`: (int)score of players' self-possession ability
+
+* `curve`: (int)score of players' curve skill
+
+* `dribble`: (int)score of players' dribbling skill
+
+* `free_kick_accuracy`: (int)score of players' free-kicking skill
+
+* `interceptions`: (int)score of players' interceptions
+
+* `jumping`: (int)score of players' jumping ability
+
+* `long_passing`: (int)score of players' long passing ability
+
+* `penalty`: (int)score of players' penalty skill
+
+* `positioning`: (int)score of players' positioning skill
+
+* `reactions`: (int)score of players' reaction speed
+
+* `shot_power`: (int)score of players' shot power
+
+* `sprint_speed`: (int)score of players' sprint speed
+
+* `stamina`: (int)score of players' stamina
+
+* `strength`: (int)score of players' strength
+
+* `vision`: (int)score of players' vision
+
+* `gk_diving`: (int)score of goal keepers' diving skill
+
+* `gk_handling`: (int)score of goal keepers' handling skill
+
+* `gk_kicking`: (int)score of goal keepers' kicking skill
+
+* `gk_positioning`: (int)score of goal keepers' positioning skill
+
+* `gk_reflexes`: (int)score of goal keepers' reflex speed
+
+* `crossing`: (int)score of players' crossing skill(an attacking skill) 
+
+* `finishing`: (int)score of players' finishing skill(an attacking skil) 
+
+* `long_shots`: (int)score of players' long shot skill(an attacking skil)
+
+* `heading`: (int)score of players' heading skill(an attacking skill) 
+
+* `volleys`: (int)score of players' volleying skill(an attacking skil)
+
+* `short_passing`: (int)score of players' short passing skill(an attacking skill)
+
+* `marking`: (int)score of players' marking skill(an defending skill)
+
+* `sliding_tackle`:(int)score of players' sliding tackle skill(an defending skill)
+
+* `standing_tackle`:(int)score of players' standing tackle skill(an defending skill)
+
+
+
