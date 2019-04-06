@@ -21,6 +21,8 @@ theme1$plot.line$lwd <- 2
 theme1$strip.background$col <- rgb(.0, .2, .6, .2)
 trellis.par.set(theme1)
 
+theme_set(theme_bw() + theme(legend.position = "bottom"))
+
 library(tidyverse)
 library(caret)
 library(splines)
@@ -60,7 +62,7 @@ save(gam.fit, file = "./gam_fit.rda")
 ```
 
 ```{r}
-load(file = "./gam_fit.rda")
+load(file = "./non-linear/gam_fit.rda")
 gam.fit$bestTune
 gam.fit$finalModel
 ```
@@ -89,23 +91,31 @@ save(mars.fit, file = "./earth.rda")
 ```
 
 ```{r}
-load(file = "./earth.rda")
+load(file = "./non-linear/earth.rda")
 summary(mars.fit)
 mars.fit$bestTune
 ```
 
+
+
+
+
+
+
+
+
 ```{r}
-p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 10) %>% autoplot()
-p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 10) %>% autoplot()
-p3 = partial(mars.fit, pred.var = c("agility"), grid.resolution = 10) %>% autoplot()
-p4 = partial(mars.fit, pred.var = c("balance"), grid.resolution = 10) %>% autoplot()
-p5 = partial(mars.fit, pred.var = c("gk_diving"), grid.resolution = 10) %>% autoplot()
-p6 = partial(mars.fit, pred.var = c("gk_handling"), grid.resolution = 10) %>% autoplot()
-p7 = partial(mars.fit, pred.var = c("gk_kicking"), grid.resolution = 10) %>% autoplot()
-p8 = partial(mars.fit, pred.var = c("gk_positioning"), grid.resolution = 10) %>% autoplot()
-p9 = partial(mars.fit, pred.var = c("gk_reflexes"), grid.resolution = 10) %>% autoplot()
-p10 = partial(mars.fit, pred.var = c("reactions"), grid.resolution = 10) %>% autoplot()
-p11 = partial(mars.fit, pred.var = c("strength"), grid.resolution = 10) %>% autoplot()
+p1 = partial(mars.fit, pred.var = c("age"), grid.resolution = 200) %>% autoplot()
+p2 = partial(mars.fit, pred.var = c("potential"), grid.resolution = 20) %>% autoplot()
+p3 = partial(mars.fit, pred.var = c("agility"), grid.resolution = 20) %>% autoplot()
+p4 = partial(mars.fit, pred.var = c("balance"), grid.resolution = 70) %>% autoplot()
+p5 = partial(mars.fit, pred.var = c("gk_diving"), grid.resolution = 20) %>% autoplot()
+p6 = partial(mars.fit, pred.var = c("gk_handling"), grid.resolution = 20) %>% autoplot()
+p7 = partial(mars.fit, pred.var = c("gk_kicking"), grid.resolution = 20) %>% autoplot()
+p8 = partial(mars.fit, pred.var = c("gk_positioning"), grid.resolution = 20) %>% autoplot()
+p9 = partial(mars.fit, pred.var = c("gk_reflexes"), grid.resolution = 20) %>% autoplot()
+p10 = partial(mars.fit, pred.var = c("reactions"), grid.resolution = 200) %>% autoplot()
+p11 = partial(mars.fit, pred.var = c("strength"), grid.resolution = 200) %>% autoplot()
 
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 3, nrow = 4)
 ```
@@ -113,7 +123,27 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, ncol = 3, nrow = 4)
 
 ## Compare those models
 ```{r}
-bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+a = bwplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+splom(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+grid.arrange(a,b, ncol = 2, nrow = 1)
+
+densityplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+dotplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+xyplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+parallelplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
+       metric = "RMSE")
+
+ggplot(resamples(list(mars = mars.fit,gam = gam.fit)), 
        metric = "RMSE")
 ```
 
@@ -161,5 +191,12 @@ mars: Nonlinear relationship (Anything else)
 like we try lambda from (e^-10, e^10), then we choose the best lambda by 10-fold cross vaildation.
 
 7.How do we know model is enough flexible? How do we make prediction?
+
+$$Y_{transformed} = 0.703 + 0.041X_{Europe} - 0.024h(X_{age} - 29) - 0.057h(X_{age} - 33) + 0.128h(X_{age} - 39)$$ 
+$$- 0.005h(71 -X_{potential}) + 0.017h(X_{potential}-71) -0.002h(61-X_{agility}) - 0.003h(X_{balance} -47)-0.007h(68 - X_{gk\_diving}) $$
+$$+ 0.016h(X_{gk\_diving} - 68) -0.005h(67-X_{gk\_handling}) + 0.014h(X_{gk\_handling}-67)+ 0.009h(X_{gk\_kicking}-72) $$
+$$+ 0.008h(X_{gk\_positioning}-43) + 0.015h(X_{gk\_reflexes}-71) + 0.011h(X_{reactions}-63) - 0.013h(41-X_{strength})$$ 
+
+$$h(x) = x_+$$
 
 
